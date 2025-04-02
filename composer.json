@@ -1,0 +1,17 @@
+{
+    "name": "gekkode/php-websocket",
+    "autoload": {
+        "psr-4": {
+            "MyApp\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Gekkode",
+            "email": "contact@gekkode.com"
+        }
+    ],
+    "require": {
+        "cboden/ratchet": "^0.4.4"
+    }
+}
