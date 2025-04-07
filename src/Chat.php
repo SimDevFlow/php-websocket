@@ -2,47 +2,7 @@
 
 namespace MyApp;
 
-// use Ratchet\ConnectionInterface;
-// use Ratchet\MessageComponentInterface;
 
-// class Chat implements MessageComponentInterface
-// {
-//     protected $clients;
-
-//     public function __construct() {
-//         $this->clients = new \SplObjectStorage;
-//     }
-
-//     public function onOpen(ConnectionInterface $conn) {
-//         $this->clients->attach($conn);
-
-//         echo "New connection! ({$conn->resourceId})\n";
-//     }
-
-//     public function onMessage(ConnectionInterface $from, $msg) {
-//         $numRecv = count($this->clients) - 1;
-//         echo sprintf('Connection %d sending message "%s" to %d other connection%s' . "\n"
-//             , $from->resourceId, $msg, $numRecv, $numRecv == 1 ? '' : 's');
-
-//         foreach ($this->clients as $client) {
-//             if ($from !== $client) {
-//                 $client->send($msg);
-//             }
-//         }
-//     }
-
-//     public function onClose(ConnectionInterface $conn) {
-//         $this->clients->detach($conn);
-
-//         echo "Connection {$conn->resourceId} has disconnected\n";
-//     }
-
-//     public function onError(ConnectionInterface $conn, \Exception $e) {
-//         echo "An error has occurred: {$e->getMessage()}\n";
-
-//         $conn->close();
-//     }
-// }
 
 use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
@@ -103,12 +63,12 @@ class Chat implements MessageComponentInterface
                 $client->send($msg);
             }
         }
-        
+
         if ($data && isset($data['message'], $data['sender_id'], $data['receiver_id'])) {
             $message = $data['message'];
             $senderId = $data['sender_id'];
             $receiverId = $data['receiver_id'];
-    
+
             // Traiter le message en fonction des besoins
             // Par exemple, envoyer le message au destinataire spécifique
             $this->saveMessageToDatabase($senderId, $receiverId, $channel, $message);
@@ -137,8 +97,9 @@ class Chat implements MessageComponentInterface
         echo "Erreur : {$e->getMessage()}\n";
         $conn->close();
     }
-    
-    private function saveMessageToDatabase($sender_id, $receiver_id, $channel, $message) {
+
+    private function saveMessageToDatabase($sender_id, $receiver_id, $channel, $message)
+    {
         $sql = "INSERT INTO messages (sender_id, receiver_id, channel, messagex) VALUES (:sender_id, :receiver_id, :channel, :messagex)";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
@@ -147,5 +108,13 @@ class Chat implements MessageComponentInterface
             ':channel' => $channel,
             ':messagex' => $message
         ]);
+    }
+
+    public function getMessagesByChannel(string $channel): array
+    {
+        $sql = "SELECT * FROM messages WHERE channel = :channel ORDER BY id ASC";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([':channel' => $channel]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 }
